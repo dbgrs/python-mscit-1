@@ -1,7 +1,6 @@
-
 from student import Get_Student_Details
 
-def Ranking_Student(Student_Details):
+def Get_Ranking_Student(Student_Details):
     for Student in Student_Details:
         print("----------------------------------------")
         for key, value in Student.items():
@@ -39,9 +38,19 @@ def Ranking_Student(Student_Details):
                 student["Rank"] = rank
 
                 previous_percentage = current_percentage
+    
+    return Student_Details
+
+    
+
+def print_student_details(Student_Details):
+
+    print("Student Details")
 
     for Student in Student_Details:
+        
         print("----------------------------------------")
+
         for key, value in Student.items():
             print(f"{key}: {value}")
 
