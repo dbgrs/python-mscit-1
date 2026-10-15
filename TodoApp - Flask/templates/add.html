@@ -1,0 +1,75 @@
+
+{% extends "base.html" %}
+
+{% block title %}Add Todo | TaskFlow{% endblock %}
+
+{% block content %}
+
+<div class="form-page">
+    <div class="form-heading">
+        <p class="eyebrow">NEW TASK</p>
+        <h1>Create a Todo</h1>
+        <p class="subtitle">Add the details for your next task.</p>
+    </div>
+
+    <form class="todo-form" method="POST"
+          action="{{ url_for('add_todo') }}">
+
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="title">Title *</label>
+            <input type="text" id="title" name="title"
+                   maxlength="150" required
+                   placeholder="e.g. Learn Flask"
+                   value="{{ title|default('') }}">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description"
+                      rows="5"
+                      placeholder="What do you need to do?">{{ description|default('') }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority" required>
+                    <option value="Low"
+                        {% if priority|default('Medium') == 'Low' %}selected{% endif %}>
+                        Low
+                    </option>
+                    <option value="Medium"
+                        {% if priority|default('Medium') == 'Medium' %}selected{% endif %}>
+                        Medium
+                    </option>
+                    <option value="High"
+                        {% if priority|default('Medium') == 'High' %}selected{% endif %}>
+                        High
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="due_date">Due Date</label>
+                <input type="date" id="due_date" name="due_date"
+                       value="{{ due_date|default('') }}">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="button primary">
+                Save Todo
+            </button>
+
+            <a href="{{ url_for('index') }}" class="button secondary">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

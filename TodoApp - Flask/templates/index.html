@@ -1,1 +1,168 @@
 
+{% extends "base.html" %}
+
+{% block title %}My Tasks | TaskFlow{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">YOUR WORKSPACE</p>
+        <h1>My Tasks</h1>
+        <p class="subtitle">Plan your day, one task at a time.</p>
+    </div>
+
+    <a href="{{ url_for('add_todo') }}" class="button primary">
+        + Create Task
+    </a>
+</section>
+
+<section class="stats">
+    <div class="stat-card">
+        <span class="stat-label">Active Tasks</span>
+        <h2>{{ active_todos|length }}</h2>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Completed Tasks</span>
+        <h2>{{ completed_todos|length }}</h2>
+    </div>
+</section>
+
+<section class="task-section">
+    <div class="section-heading">
+        <h2>Active Tasks</h2>
+        <span class="count">{{ active_todos|length }} tasks</span>
+    </div>
+
+    {% if active_todos %}
+        <div class="task-list">
+            {% for todo in active_todos %}
+                <article class="task-card">
+                    <div class="task-main">
+                        <div class="task-title-row">
+                            <h3>{{ todo.title }}</h3>
+                            <span class="priority {{ todo.priority|lower }}">
+                                {{ todo.priority }}
+                            </span>
+                        </div>
+
+                        {% if todo.description %}
+                            <p class="task-description">
+                                {{ todo.description }}
+                            </p>
+                        {% else %}
+                            <p class="task-description muted">
+                                No description provided.
+                            </p>
+                        {% endif %}
+
+                        <p class="due-date">
+                            Due date:
+                            {% if todo.due_date %}
+                                {{ todo.due_date.strftime('%d %b %Y') }}
+                            {% else %}
+                                Not set
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="task-actions">
+                        <form action="{{ url_for('toggle_todo', todo_id=todo.id) }}"
+                              method="POST">
+                            <button type="submit" class="button success">
+                                Complete
+                            </button>
+                        </form>
+
+                        <a href="{{ url_for('edit_todo', todo_id=todo.id) }}"
+                           class="button secondary">
+                            Edit
+                        </a>
+
+                        <form action="{{ url_for('delete_todo', todo_id=todo.id) }}"
+                              method="POST">
+                            <button type="submit" class="button danger">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h3>You're all caught up!</h3>
+            <p>No active tasks. Create a todo to get started.</p>
+            <a href="{{ url_for('add_todo') }}" class="button primary">
+                Create your first task
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+<section class="task-section">
+    <div class="section-heading">
+        <h2>Completed Tasks</h2>
+        <span class="count">{{ completed_todos|length }} tasks</span>
+    </div>
+
+    {% if completed_todos %}
+        <div class="task-list">
+            {% for todo in completed_todos %}
+                <article class="task-card completed-card">
+                    <div class="task-main">
+                        <div class="task-title-row">
+                            <h3 class="completed-title">{{ todo.title }}</h3>
+                            <span class="priority {{ todo.priority|lower }}">
+                                {{ todo.priority }}
+                            </span>
+                        </div>
+
+                        {% if todo.description %}
+                            <p class="task-description">
+                                {{ todo.description }}
+                            </p>
+                        {% endif %}
+
+                        <p class="due-date">
+                            Due date:
+                            {% if todo.due_date %}
+                                {{ todo.due_date.strftime('%d %b %Y') }}
+                            {% else %}
+                                Not set
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="task-actions">
+                        <form action="{{ url_for('toggle_todo', todo_id=todo.id) }}"
+                              method="POST">
+                            <button type="submit" class="button secondary">
+                                Mark Active
+                            </button>
+                        </form>
+
+                        <a href="{{ url_for('edit_todo', todo_id=todo.id) }}"
+                           class="button secondary">
+                            Edit
+                        </a>
+
+                        <form action="{{ url_for('delete_todo', todo_id=todo.id) }}"
+                              method="POST">
+                            <button type="submit" class="button danger">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state compact">
+            <p>No completed tasks yet.</p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
