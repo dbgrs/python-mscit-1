@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TaskFlow</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="page">
+        <header class="navbar">
+            <a class="brand" href="/dashboard">TaskFlow<span>.</span></a>
+            <div class="nav-right">
+                <a class="nav-link" href="/tasks">All Tasks</a>
+                <span class="user-label">{{ user.username }}</span>
+                <form action="/logout" method="post">
+                    <button class="button button-light" type="submit">Logout</button>
+                </form>
+            </div>
+        </header>
+
+        {% if message %}
+        <div class="notice" role="status">{{ message }}</div>
+        {% endif %}
+
+        <main>
+            <section class="dashboard-heading">
+                <div>
+                    <span class="eyebrow">YOUR PERSONAL WORKSPACE</span>
+                    <h1>My dashboard<span>.</span></h1>
+                    <p class="muted">Welcome back, {{ user.username }}. Make today productive.</p>
+                </div>
+                <a class="button button-primary" href="/tasks">View all tasks →</a>
+            </section>
+
+            <section class="stats">
+                <div class="stat-card">
+                    <span>Total tasks</span>
+                    <strong>{{ total_count }}</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Pending</span>
+                    <strong>{{ pending_count }}</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Completed</span>
+                    <strong>{{ completed_count }}</strong>
+                </div>
+            </section>
+
+            <section class="workspace dashboard-workspace">
+                <div class="panel create-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="eyebrow">GET STARTED</span>
+                            <h2>Add a task</h2>
+                        </div>
+                        <span class="plus-icon">+</span>
+                    </div>
+
+                    <form action="/tasks/create" method="post">
+                        <div class="field">
+                            <label for="title">Task title</label>
+                            <input id="title" name="title" maxlength="200"
+                                   placeholder="What needs to get done?" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description"
+                                      rows="4" placeholder="Add some details..."></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label for="date">Due date</label>
+                            <input id="date" name="date" type="date">
+                        </div>
+
+                        <div class="field">
+                            <label for="priority">Priority</label>
+                            <select id="priority" name="priority">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+
+                        <button class="button button-primary full" type="submit">
+                            + Add task
+                        </button>
+                    </form>
+
+                    <div class="tip">
+                        <strong>Small tip</strong>
+                        <p>Break big goals into smaller tasks you can finish.</p>
+                    </div>
+                </div>
+
+                <div class="panel list-panel latest-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="eyebrow">RECENT ACTIVITY</span>
+                            <h2>Latest task</h2>
+                        </div>
+                        <a class="nav-link" href="/tasks">View all →</a>
+                    </div>
+
+                    {% if latest_tasks %}
+                    <div class="task-list">
+                        {% for task in latest_tasks %}
+                        <article class="task-card">
+                            <div class="task-main">
+                                <h3 class="{% if task.iscompleted %}completed-title{% endif %}">
+                                    {{ task.title }}
+                                </h3>
+
+                                {% if task.description %}
+                                <p class="task-description">{{ task.description }}</p>
+                                {% else %}
+                                <p class="task-description muted">No description</p>
+                                {% endif %}
+
+                                <p class="task-date">
+                                    Due date:
+                                    {% if task.date %}
+                                    {{ task.date.strftime("%d %b %Y") }}
+                                    {% else %}
+                                    No due date
+                                    {% endif %}
+                                </p>
+
+                                <div class="task-meta">
+                                    <span class="priority priority-{{ task.priority }}">
+                                        {{ task.priority }}
+                                    </span>
+
+                                    {% if task.iscompleted %}
+                                    <span class="status status-completed">Completed</span>
+                                    {% else %}
+                                    <span class="status status-pending">Pending</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <p class="latest-created">
+                                Created:
+                                {% if task.createdat %}
+                                {{ task.createdat.strftime("%d %b %Y, %I:%M %p") }}
+                                {% else %}
+                                Recently
+                                {% endif %}
+                            </p>
+                        </article>
+                        {% endfor %}
+                    </div>
+
+<a class="button button-primary full" href="/tasks">
+    Manage all tasks
+</a>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">+</div>
+    <h3>No tasks yet</h3>
+    <p>Create your first task using the form.</p>
+</div>
+{% endif %}
+                </div>
+            </section>
+        </main>
+
+        <footer><p>TaskFlow · Built with FastAPI and SQLite</p></footer>
+    </div>
+</body>
+</html>
