@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Tasks - TaskFlow</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="page">
+        <header class="navbar">
+            <a class="brand" href="/dashboard">TaskFlow<span>.</span></a>
+            <div class="nav-right">
+                <a class="nav-link" href="/dashboard">Dashboard</a>
+                <span class="user-label">{{ user.username }}</span>
+                <form action="/logout" method="post">
+                    <button class="button button-light" type="submit">Logout</button>
+                </form>
+            </div>
+        </header>
+
+        {% if message %}
+        <div class="notice" role="status">{{ message }}</div>
+        {% endif %}
+
+        <main>
+            <section class="dashboard-heading">
+                <div>
+                    <span class="eyebrow">STAY ORGANIZED</span>
+                    <h1>All tasks<span>.</span></h1>
+                    <p class="muted">Search, filter, and manage your personal tasks.</p>
+                </div>
+                <a class="button button-primary" href="/dashboard">+ Add a task</a>
+            </section>
+
+            <section class="panel list-panel all-tasks-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span class="eyebrow">YOUR WORK</span>
+                        <h2>Task list</h2>
+                    </div>
+                    <span class="task-count">{{ total_matching_tasks }} found</span>
+                </div>
+
+                <form action="/tasks" method="get" class="filter-form">
+                    <div class="field search-field">
+                        <label for="search">Search tasks</label>
+                        <input id="search" name="search" value="{{ search }}"
+                               placeholder="Search by title...">
+                    </div>
+
+                    <div class="field">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="all" {% if status == "all" %}selected{% endif %}>All</option>
+                            <option value="pending" {% if status == "pending" %}selected{% endif %}>Pending</option>
+                            <option value="completed" {% if status == "completed" %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="priority">Priority</label>
+                        <select id="priority" name="priority">
+                            <option value="all" {% if priority == "all" %}selected{% endif %}>All</option>
+                            <option value="High" {% if priority == "High" %}selected{% endif %}>High</option>
+                            <option value="Medium" {% if priority == "Medium" %}selected{% endif %}>Medium</option>
+                            <option value="Low" {% if priority == "Low" %}selected{% endif %}>Low</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="button button-primary" type="submit">Apply filters</button>
+                        <a class="button button-light" href="/tasks">Reset</a>
+                    </div>
+                </form>
+
+                <div class="results-info">
+                    {% if total_matching_tasks > 0 %}
+                    Showing {{ start_task }}–{{ end_task }} of {{ total_matching_tasks }} tasks
+                    {% else %}
+                    No matching tasks
+                    {% endif %}
+                </div>
+
+                <div class="task-list">
+                    {% for task in tasks %}
+                    <article class="task-card">
+                        <div class="task-card-top">
+                            <div class="task-main">
+                                <h3 class="{% if task.iscompleted %}completed-title{% endif %}">
+                                    {{ task.title }}
+                                </h3>
+
+                                {% if task.description %}
+                                <p class="task-description">{{ task.description }}</p>
+                                {% else %}
+                                <p class="task-description muted">No description</p>
+                                {% endif %}
+
+                                <p class="task-date">
+                                    Due date:
+                                    {% if task.date %}
+                                    <time datetime="{{ task.date.isoformat() }}">{{ task.date.strftime("%d %b %Y") }}</time>
+                                    {% else %}
+                                    No due date
+                                    {% endif %}
+                                </p>
+
+                                <div class="task-meta">
+                                    <span class="priority priority-{{ task.priority }}">{{ task.priority }}</span>
+
+                                    {% if task.iscompleted %}
+                                    <span class="status status-completed">Completed</span>
+                                    {% else %}
+                                    <span class="status status-pending">Pending</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <form action="/tasks/{{ task.id }}/complete" method="post">
+                                <button class="button button-light" type="submit">
+                                    {% if task.iscompleted %}Reopen{% else %}Complete{% endif %}
+                                </button>
+                            </form>
+                        </div>
+
+                        <details class="edit-details">
+                            <summary>Edit task</summary>
+
+                            <form action="/tasks/{{ task.id }}/edit" method="post">
+                                <div class="field">
+                                    <label for="title_{{ task.id }}">Title</label>
+                                    <input id="title_{{ task.id }}" name="title"
+                                           value="{{ task.title }}" maxlength="200" required>
+                                </div>
+
+                                <div class="field">
+                                    <label for="description_{{ task.id }}">Description</label>
+                                    <textarea id="description_{{ task.id }}" name="description"
+                                              rows="3">{{ task.description or "" }}</textarea>
+                                </div>
+
+                                <div class="field">
+                                    <label for="date_{{ task.id }}">Due date</label>
+                                    <input id="date_{{ task.id }}" name="date" type="date"
+                                           value="{{ task.date.isoformat() if task.date else '' }}">
+                                </div>
+
+                                <div class="field">
+                                    <label for="priority_{{ task.id }}">Priority</label>
+                                    <select id="priority_{{ task.id }}" name="priority">
+                                        <option value="Low" {% if task.priority == "Low" %}selected{% endif %}>Low</option>
+                                        <option value="Medium" {% if task.priority == "Medium" %}selected{% endif %}>Medium</option>
+                                        <option value="High" {% if task.priority == "High" %}selected{% endif %}>High</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label for="completed_{{ task.id }}">Status</label>
+                                    <select id="completed_{{ task.id }}" name="iscompleted">
+                                        <option value="false" {% if not task.iscompleted %}selected{% endif %}>Pending</option>
+                                        <option value="true" {% if task.iscompleted %}selected{% endif %}>Completed</option>
+                                    </select>
+                                </div>
+
+                                <button class="button button-primary" type="submit">Save changes</button>
+                            </form>
+                        </details>
+
+                        <form action="/tasks/{{ task.id }}/delete" method="post" class="delete-form">
+                            <button class="button button-danger" type="submit">Delete task</button>
+                        </form>
+                    </article>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">✓</div>
+                        <h3>No tasks found</h3>
+                        <p>
+                            {% if search or status != "all" or priority != "all" %}
+                            Try changing your filters or reset them.
+                            {% else %}
+                            You haven't created any tasks yet.
+                            {% endif %}
+                        </p>
+                        <a class="button button-primary" href="/dashboard">Create a task</a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if total_pages > 1 %}
+                <nav class="pagination" aria-label="Task pages">
+                    {% if page > 1 %}
+                    <a class="page-link"
+                       href="/tasks?page={{ page - 1 }}&amp;search={{ search|urlencode }}&amp;status={{ status }}&amp;priority={{ priority }}">
+                        Previous
+                    </a>
+                    {% else %}
+                    <span class="page-link disabled">Previous</span>
+                    {% endif %}
+
+                    {% for page_number in range(1, total_pages + 1) %}
+                        {% if page_number == page %}
+                        <span class="page-link active" aria-current="page">{{ page_number }}</span>
+                        {% elif page_number == 1 or page_number == total_pages or (page_number >= page - 2 and page_number <= page + 2) %}
+                        <a class="page-link"
+                           href="/tasks?page={{ page_number }}&amp;search={{ search|urlencode }}&amp;status={{ status }}&amp;priority={{ priority }}">
+                            {{ page_number }}
+                        </a>
+                        {% elif page_number == page - 3 or page_number == page + 3 %}
+                        <span class="page-ellipsis">…</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page < total_pages %}
+                    <a class="page-link"
+                       href="/tasks?page={{ page + 1 }}&amp;search={{ search|urlencode }}&amp;status={{ status }}&amp;priority={{ priority }}">
+                        Next
+                    </a>
+                    {% else %}
+                    <span class="page-link disabled">Next</span>
+                    {% endif %}
+                </nav>
+                {% endif %}
+            </section>
+        </main>
+
+        <footer><p>TaskFlow · Built with FastAPI and SQLite</p></footer>
+    </div>
+</body>
+</html>
